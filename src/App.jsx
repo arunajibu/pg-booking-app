@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
+import './App.css';
 
 function App() {
   const [session, setSession] = useState(null);
@@ -49,40 +50,45 @@ function App() {
   };
 
   return (
-    <div style={{ padding: 40 }}>
+    <div>
       {!session ? (
-        <div>
-          <h2>Login / Signup</h2>
+        <div className="auth-container">
+          <div className="auth-header">
+            <h2>🏠 RentalHub</h2>
+            <p>Sign in to manage your property bookings</p>
+          </div>
 
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
+          <div className="form-group">
+            <input
+              type="email"
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
 
-          <br /><br />
+            <input
+              type="password"
+              placeholder="Enter your password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
 
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-
-          <br /><br />
-
-          <button onClick={login}>Login</button>
-          <button onClick={signUp} style={{ marginLeft: 10 }}>
-            Sign Up
-          </button>
+          <div className="button-group">
+            <button onClick={login}>Login</button>
+            <button onClick={signUp}>Sign Up</button>
+          </div>
         </div>
       ) : (
-        <div>
-          <h2>Welcome 🎉</h2>
-          <p>{session.user.email}</p>
-
-          <button onClick={logout}>Logout</button>
+        <div className="welcome-container">
+          <h2>Welcome to RentalHub 🎉</h2>
+          <div className="user-email">
+            {session.user.email}
+          </div>
+          <p style={{ color: '#6b7280', marginBottom: '2rem' }}>
+            Start managing your property rentals and bookings
+          </p>
+          <button onClick={logout} className="logout-btn">Logout</button>
         </div>
       )}
     </div>
