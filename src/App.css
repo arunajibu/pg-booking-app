@@ -128,3 +128,17 @@ br {
   color: #6b7280;
   margin-bottom: 10px;
 }
+.book-btn {
+  margin-top: 10px;
+  width: 100%;
+  padding: 8px;
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.book-btn:hover {
+  background: #1d4ed8;
+}
