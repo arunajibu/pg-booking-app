@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
 import './App.css';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+
 
 function App() {
   const [session, setSession] = useState(null);
@@ -9,6 +12,15 @@ function App() {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
+  const [showModal, setShowModal] = useState(false);
+  const [selectedRoom, setSelectedRoom] = useState(null);
+
+  const [checkIn, setCheckIn] = useState(null);
+  const [checkOut, setCheckOut] = useState(null);
+
+  const [disabledDates, setDisabledDates] = useState([]);
+
 
   // -------------------------------
   // AUTH SESSION
@@ -281,7 +293,7 @@ function App() {
 
                     <button
                       className="book-btn"
-                      onClick={() => handleBook(room.id)}
+                      onClick={() => openBookingModal(room)}
                     >
                       Book Now
                     </button>
