@@ -142,3 +142,46 @@ br {
 .book-btn:hover {
   background: #1d4ed8;
 }
+/* ===========================
+   MY BOOKINGS STYLES
+=========================== */
+
+.bookings-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.booking-card {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  transition: transform 0.2s ease;
+}
+
+.booking-card:hover {
+  transform: translateY(-4px);
+}
+
+.booking-image {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+}
+
+.booking-content {
+  padding: 1rem;
+}
+
+.booking-content h4 {
+  margin-bottom: 0.5rem;
+  color: #1f2937;
+}
+
+.booking-content p {
+  margin: 0.25rem 0;
+  color: #4b5563;
+  font-size: 0.95rem;
+}

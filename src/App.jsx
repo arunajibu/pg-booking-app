@@ -41,6 +41,33 @@ function App() {
       setRooms(data);
     }
   };
+  // -------------------------------
+  // FETCH BOOKING
+  // -------------------------------
+// Fetch user's bookings
+  const fetchBookings = async () => {
+    const { data, error } = await supabase
+      .from('bookings')
+      .select(`
+      id,
+      check_in,
+      check_out,
+      status,
+      rooms (
+        name,
+        price,
+        image_url
+      )
+    `)
+      .eq('user_id', session.user.id)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      alert(error.message);
+    } else {
+      setBookings(data);
+    }
+  };
 
   // -------------------------------
   // HANDLE BOOKING
@@ -79,6 +106,7 @@ function App() {
   useEffect(() => {
     if (session) {
       fetchRooms();
+      fetchBookings();
     }
   }, [session]);
 
@@ -175,6 +203,44 @@ function App() {
           </button>
 
           <hr style={{ margin: '2rem 0' }} />
+            {/* MY BOOKINGS */}
+            <h3>My Bookings</h3>
+
+            {bookings.length === 0 ? (
+              <p>You have no bookings yet.</p>
+            ) : (
+              <div className="bookings-container">
+                {bookings.map((booking) => (
+                  <div key={booking.id} className="booking-card">
+                    <img
+                      src={booking.rooms?.image_url}
+                      alt={booking.rooms?.name}
+                      className="booking-image"
+                    />
+
+                    <div className="booking-content">
+                      <h4>{booking.rooms?.name}</h4>
+
+                      <p>
+                        <strong>Check-in:</strong> {booking.check_in}
+                      </p>
+
+                      <p>
+                        <strong>Check-out:</strong> {booking.check_out}
+                      </p>
+
+                      <p>
+                        <strong>Status:</strong> {booking.status}
+                      </p>
+
+                      <p>
+                        <strong>Price:</strong> ₹{booking.rooms?.price}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
 
           {/* ROOMS LIST */}
           <h3>Available Rooms</h3>
