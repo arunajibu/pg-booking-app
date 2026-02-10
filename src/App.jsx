@@ -139,7 +139,8 @@ function App() {
     const { data, error } = await supabase
       .from('bookings')
       .select('check_in, check_out')
-      .eq('room_id', room.id);
+  .eq('room_id', room.id)
+.eq('status', 'approved');
 
     if (error) {
       alert(error.message);
@@ -272,6 +273,7 @@ function App() {
       .from('bookings')
       .select('*')
       .eq('room_id', selectedRoom.id)
+      .eq('status', 'approved')
       .lt('check_in', checkOut.toISOString())
       .gt('check_out', checkIn.toISOString());
 
@@ -325,6 +327,7 @@ function App() {
     } else {
       alert(`Booking ${newStatus}`);
       fetchAllBookings();
+      fetchRooms();
     }
   };
 
@@ -419,7 +422,8 @@ function App() {
                         <strong>Status:</strong> {booking.status}
                       </p>
 
-                      {userRole === 'admin' && (
+                      {userRole === 'admin' && booking.status === 'pending' && (
+
                         <div className="admin-actions">
                           <button
                             className="approve-btn"
@@ -440,6 +444,7 @@ function App() {
                           </button>
                         </div>
                       )}
+
 
 
                       <p>
