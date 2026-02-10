@@ -9,6 +9,7 @@ function App() {
   const [session, setSession] = useState(null);
   const [rooms, setRooms] = useState([]);
   const [bookings, setBookings] = useState([]);
+  const [userRole, setUserRole] = useState(null);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -80,6 +81,89 @@ function App() {
       setBookings(data);
     }
   };
+  //----------------------------------------
+  // Fetch user role
+  //----------------------------------------
+  const fetchUserRole = async () => {
+    const { data, error } = await supabase
+      .from('users')
+      .select('role')
+      .eq('id', session.user.id)
+      .single();
+
+    if (error) {
+      console.error(error);
+    } else {
+      setUserRole(data.role);
+    }
+  };
+
+  //-----------------------------------
+  // Fetch all bookings (Admin)
+  //-----------------------------------
+  const fetchAllBookings = async () => {
+    const { data, error } = await supabase
+      .from('bookings')
+      .select(`
+      id,
+      check_in,
+      check_out,
+      status,
+      rooms (
+        name,
+        price,
+        image_url
+      )
+    `)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      alert(error.message);
+    } else {
+      setBookings(data);
+    }
+  };
+
+
+//-------------------------------------------
+// Open booking modal and load booked dates
+//-------------------------------------------
+  const openBookingModal = async (room) => {
+    setSelectedRoom(room);
+    setShowModal(true);
+
+    setCheckIn(null);
+    setCheckOut(null);
+
+    // Get existing bookings for this room
+    const { data, error } = await supabase
+      .from('bookings')
+      .select('check_in, check_out')
+      .eq('room_id', room.id);
+
+    if (error) {
+      alert(error.message);
+      return;
+    }
+
+    // Generate disabled dates
+    let dates = [];
+
+    data.forEach((booking) => {
+      let start = new Date(booking.check_in);
+      let end = new Date(booking.check_out);
+
+      for (
+        let d = new Date(start);
+        d <= end;
+        d.setDate(d.getDate() + 1)
+      ) {
+        dates.push(new Date(d));
+      }
+    });
+
+    setDisabledDates(dates);
+  };
 
   // -------------------------------
   // HANDLE BOOKING
@@ -118,9 +202,25 @@ function App() {
   useEffect(() => {
     if (session) {
       fetchRooms();
-      fetchBookings();
+      fetchUserRole();
     }
   }, [session]);
+
+  useEffect(() => {
+    if (!session || !userRole) return;
+
+    const isAdmin = userRole === 'admin' || userRole === 'admin_user';
+
+    if (isAdmin) {
+      console.log("ADMIN MODE: Fetching all bookings");
+      fetchAllBookings();
+    } else {
+      console.log("USER MODE: Fetching own bookings");
+      fetchBookings();
+    }
+
+  }, [session, userRole]);
+
 
   // -------------------------------
   // SIGNUP
@@ -153,6 +253,81 @@ function App() {
   const logout = async () => {
     await supabase.auth.signOut();
   };
+  //---------------------------------
+  // Confirm booking from modal
+  //---------------------------------
+  const handleConfirmBooking = async () => {
+    if (!checkIn || !checkOut) {
+      alert('Please select both dates');
+      return;
+    }
+
+    if (checkIn >= checkOut) {
+      alert('Check-out must be after check-in');
+      return;
+    }
+
+    // Extra safety: check conflicts again
+    const { data: conflicts, error: conflictError } = await supabase
+      .from('bookings')
+      .select('*')
+      .eq('room_id', selectedRoom.id)
+      .lt('check_in', checkOut.toISOString())
+      .gt('check_out', checkIn.toISOString());
+
+    if (conflictError) {
+      alert(conflictError.message);
+      return;
+    }
+
+    if (conflicts.length > 0) {
+      alert('❌ Selected dates are already booked');
+      return;
+    }
+
+    // Insert booking
+    const { error } = await supabase.from('bookings').insert([
+      {
+        room_id: selectedRoom.id,
+        user_id: session.user.id,
+        check_in: checkIn.toISOString().split('T')[0],
+        check_out: checkOut.toISOString().split('T')[0],
+        status: 'pending',
+      },
+    ]);
+
+    if (error) {
+      alert(error.message);
+    } else {
+      alert('Booking successful 🎉');
+
+      setShowModal(false);
+
+      if (userRole === 'admin') {
+        fetchAllBookings();
+      } else {
+        fetchBookings();
+      }
+
+    }
+  };
+  //-----------------------------------
+  // Update booking status (Admin)
+  //-----------------------------------
+  const updateBookingStatus = async (bookingId, newStatus) => {
+    const { error } = await supabase
+      .from('bookings')
+      .update({ status: newStatus })
+      .eq('id', bookingId);
+
+    if (error) {
+      alert(error.message);
+    } else {
+      alert(`Booking ${newStatus}`);
+      fetchAllBookings();
+    }
+  };
+
 
   // -------------------------------
   // UI
@@ -216,8 +391,7 @@ function App() {
 
           <hr style={{ margin: '2rem 0' }} />
             {/* MY BOOKINGS */}
-            <h3>My Bookings</h3>
-
+            <h3>{userRole === 'admin' ? 'Admin Dashboard' : 'My Bookings'}</h3>
             {bookings.length === 0 ? (
               <p>You have no bookings yet.</p>
             ) : (
@@ -244,6 +418,29 @@ function App() {
                       <p>
                         <strong>Status:</strong> {booking.status}
                       </p>
+
+                      {userRole === 'admin' && (
+                        <div className="admin-actions">
+                          <button
+                            className="approve-btn"
+                            onClick={() =>
+                              updateBookingStatus(booking.id, 'approved')
+                            }
+                          >
+                            Approve
+                          </button>
+
+                          <button
+                            className="reject-btn"
+                            onClick={() =>
+                              updateBookingStatus(booking.id, 'rejected')
+                            }
+                          >
+                            Reject
+                          </button>
+                        </div>
+                      )}
+
 
                       <p>
                         <strong>Price:</strong> ₹{booking.rooms?.price}
@@ -310,6 +507,60 @@ function App() {
 
         </div>
 
+      )}
+      {/* BOOKING MODAL */}
+      {showModal && (
+        <div className="modal-overlay">
+          <div className="booking-modal">
+
+            <h3>Book: {selectedRoom?.name}</h3>
+
+            <div className="date-picker-group">
+
+              <label>Check In</label>
+              <DatePicker
+                selected={checkIn}
+                onChange={(date) => setCheckIn(date)}
+                selectsStart
+                startDate={checkIn}
+                endDate={checkOut}
+                minDate={new Date()}
+                excludeDates={disabledDates}
+                placeholderText="Select check-in date"
+              />
+
+              <label>Check Out</label>
+              <DatePicker
+                selected={checkOut}
+                onChange={(date) => setCheckOut(date)}
+                selectsEnd
+                startDate={checkIn}
+                endDate={checkOut}
+                minDate={checkIn || new Date()}
+                excludeDates={disabledDates}
+                placeholderText="Select check-out date"
+              />
+
+            </div>
+
+            <div className="modal-buttons">
+              <button
+                className="confirm-btn"
+                onClick={handleConfirmBooking}
+              >
+                Confirm Booking
+              </button>
+
+              <button
+                className="cancel-btn"
+                onClick={() => setShowModal(false)}
+              >
+                Cancel
+              </button>
+            </div>
+
+          </div>
+        </div>
       )}
 
     </div>
