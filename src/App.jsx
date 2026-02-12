@@ -10,6 +10,7 @@ function App() {
   const [rooms, setRooms] = useState([]);
   const [bookings, setBookings] = useState([]);
   const [userRole, setUserRole] = useState(null);
+  const [showBookings, setShowBookings] = useState(false);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -139,7 +140,7 @@ function App() {
     const { data, error } = await supabase
       .from('bookings')
       .select('check_in, check_out')
-  .eq('room_id', room.id)
+      .eq('room_id', room.id)
 .eq('status', 'approved');
 
     if (error) {
@@ -164,37 +165,6 @@ function App() {
     });
 
     setDisabledDates(dates);
-  };
-
-  // -------------------------------
-  // HANDLE BOOKING
-  // -------------------------------
-  const handleBook = async (roomId) => {
-    const startDate = prompt('Enter start date (YYYY-MM-DD)');
-    const endDate = prompt('Enter end date (YYYY-MM-DD)');
-
-    if (!startDate || !endDate) {
-      alert('Please enter both dates');
-      return;
-    }
-
-    const { error } = await supabase
-      .from('bookings')
-      .insert([
-        {
-          room_id: roomId,
-          user_id: session.user.id,
-          check_in: startDate,
-          check_out: endDate,
-          status: 'pending',
-        },
-      ]);
-
-    if (error) {
-      alert(error.message);
-    } else {
-      alert('Booking successful 🎉');
-    }
   };
 
   // -------------------------------
@@ -376,25 +346,57 @@ function App() {
       ) : (
 
         /* DASHBOARD */
-        <div className="welcome-container">
+          <div>
 
-          <h2>Welcome to RentalHub 🎉</h2>
+            {/* NAVBAR */}
+            <div className="navbar">
 
-          <div className="user-email">
-            {session.user.email}
-          </div>
+              {/* Left */}
+              <div className="nav-left">
+                🏠 RentalHub
+              </div>
 
-          <p style={{ color: '#6b7280', marginBottom: '2rem' }}>
-            Start managing your property rentals and bookings
-          </p>
+              {/* Center */}
+              <div className="nav-center">
+                Welcome, {session.user.email}
+              </div>
 
-          <button onClick={logout} className="logout-btn">
-            Logout
-          </button>
+              {/* Right */}
+              <div className="nav-right">
 
-          <hr style={{ margin: '2rem 0' }} />
-            {/* MY BOOKINGS */}
-            <h3>{userRole === 'admin' ? 'Admin Dashboard' : 'My Bookings'}</h3>
+                {userRole !== 'admin' && !showBookings && (
+                  <button
+                    className="nav-link"
+                    onClick={() => setShowBookings(true)}
+                  >
+                    My Bookings
+                  </button>
+                )}
+                {userRole !== 'admin' && showBookings && (
+                  <button
+                    className="nav-link"
+                    onClick={() => setShowBookings(false)}
+                  >
+                    Home
+                  </button>
+                )}
+                <button
+                  className="nav-link logout-btn"
+                  onClick={logout}
+                >
+                  Logout
+                </button>
+
+              </div>
+
+            </div>
+
+<div className="welcome-container">
+
+{/* MY BOOKINGS */}
+{showBookings && userRole !== 'admin' && (
+  <>
+    <h3>My Bookings</h3>
             {bookings.length === 0 ? (
               <p>You have no bookings yet.</p>
             ) : (
@@ -420,33 +422,7 @@ function App() {
 
                       <p>
                         <strong>Status:</strong> {booking.status}
-                      </p>
-
-                      {userRole === 'admin' && booking.status === 'pending' && (
-
-                        <div className="admin-actions">
-                          <button
-                            className="approve-btn"
-                            onClick={() =>
-                              updateBookingStatus(booking.id, 'approved')
-                            }
-                          >
-                            Approve
-                          </button>
-
-                          <button
-                            className="reject-btn"
-                            onClick={() =>
-                              updateBookingStatus(booking.id, 'rejected')
-                            }
-                          >
-                            Reject
-                          </button>
-                        </div>
-                      )}
-
-
-
+                      </p> 
                       <p>
                         <strong>Price:</strong> ₹{booking.rooms?.price}
                       </p>
@@ -455,9 +431,67 @@ function App() {
                 ))}
               </div>
             )}
+  </>
+)}
+{/* ADMIN BOOKINGS */}
+{userRole === 'admin' && (
+  <>
+    <h3>All Bookings (Admin)</h3>
 
-          {/* ROOMS LIST */}
-          <h3>Available Rooms</h3>
+    {bookings.length === 0 ? (
+      <p>No bookings found.</p>
+    ) : (
+      <div className="bookings-container">
+        {bookings.map((booking) => (
+          <div key={booking.id} className="booking-card">
+            <img
+              src={booking.rooms?.image_url}
+              alt={booking.rooms?.name}
+              className="booking-image"
+            />
+
+            <div className="booking-content">
+              <h4>{booking.rooms?.name}</h4>
+
+              <p><strong>Check-in:</strong> {booking.check_in}</p>
+              <p><strong>Check-out:</strong> {booking.check_out}</p>
+              <p><strong>Status:</strong> {booking.status}</p>
+              <p><strong>Price:</strong> ₹{booking.rooms?.price}</p>
+
+              {booking.status === 'pending' && (
+                <div className="admin-actions">
+                  <button
+                    className="approve-btn"
+                    onClick={() =>
+                      updateBookingStatus(booking.id, 'approved')
+                    }
+                  >
+                    Approve
+                  </button>
+
+                  <button
+                    className="reject-btn"
+                    onClick={() =>
+                      updateBookingStatus(booking.id, 'rejected')
+                    }
+                  >
+                    Reject
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    )}
+  </>
+)}
+
+
+{/* ROOMS LIST */}
+{!showBookings && userRole !== 'admin' && (
+  <>
+    <h3>Available Rooms</h3>
 
           {rooms.length === 0 ? (
 
@@ -509,10 +543,13 @@ function App() {
             </div>
 
           )}
+    </>
+)}
 
         </div>
-
+</div>
       )}
+
       {/* BOOKING MODAL */}
       {showModal && (
         <div className="modal-overlay">
