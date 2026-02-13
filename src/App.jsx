@@ -23,6 +23,7 @@ function App() {
 
   const [disabledDates, setDisabledDates] = useState([]);
 
+  const [loadingPayment, setLoadingPayment] = useState(null);
 
   // -------------------------------
   // AUTH SESSION
@@ -67,6 +68,7 @@ function App() {
       check_in,
       check_out,
       status,
+      payment_status,
       rooms (
         name,
         price,
@@ -328,6 +330,30 @@ function App() {
   ).length;
 
   // -------------------------------
+  // Handle Payment
+  // -------------------------------
+  const handlePayment = async (booking) => {
+    try {
+      setLoadingPayment(booking.id);
+
+      // simulate payment delay
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
+      await supabase
+        .from("bookings")
+        .update({ payment_status: "paid" })
+        .eq("id", booking.id);
+
+      setLoadingPayment(null);
+      fetchBookings();
+    } catch (error) {
+      console.error(error);
+      setLoadingPayment(null);
+    }
+  };
+
+
+  // -------------------------------
   // UI
   // -------------------------------
   return (
@@ -473,6 +499,28 @@ function App() {
                       <p>
                         <strong>Price:</strong> ₹{booking.rooms?.price}
                       </p>
+                      <p>
+                        <strong>Payment:</strong>{" "}
+                        {booking.payment_status === "paid" ? (
+                          <span className="paid-badge">Paid</span>
+                        ) : (
+                          <span className="unpaid-badge">Unpaid</span>
+                        )}
+                      </p>
+
+                      {booking.status === "approved" &&
+                        booking.payment_status !== "paid" && (
+                          <button
+                            className="pay-btn"
+                            onClick={() => handlePayment(booking)}
+                            disabled={loadingPayment === booking.id}
+                          >
+                            {loadingPayment === booking.id
+                              ? "Processing..."
+                              : "Pay Now"}
+                          </button>
+                        )}
+
                     </div>
                   </div>
                 ))}

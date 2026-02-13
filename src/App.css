@@ -531,3 +531,40 @@ body {
 .stat-card.rejected {
   border-top: 5px solid #ea4335;
 }
+.pay-btn {
+  margin-top: 10px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 10px;
+  background-color: #2962ff;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.pay-btn:hover {
+  background-color: #0039cb;
+  transform: translateY(-2px);
+}
+
+.pay-btn:disabled {
+  background-color: #9fa8da;
+  cursor: not-allowed;
+}
+
+.paid-badge {
+  background: #e6f7ed;
+  color: #1a7f37;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+.unpaid-badge {
+  background: #fdecea;
+  color: #b42318;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-weight: 600;
+}
