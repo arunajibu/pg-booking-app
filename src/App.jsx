@@ -310,7 +310,22 @@ function App() {
       </span>
     );
   };
+//-----------------------------------------
+// Statistics admin dashboard
+//-----------------------------------------
+  const totalBookings = bookings.length;
 
+  const pendingCount = bookings.filter(
+    (b) => b.status === "pending"
+  ).length;
+
+  const approvedCount = bookings.filter(
+    (b) => b.status === "approved"
+  ).length;
+
+  const rejectedCount = bookings.filter(
+    (b) => b.status === "rejected"
+  ).length;
 
   // -------------------------------
   // UI
@@ -465,9 +480,37 @@ function App() {
             )}
   </>
 )}
+
+
 {/* ADMIN BOOKINGS */}
 {userRole === 'admin' && showBookings && (
   <>
+  {/*-----------------------------------------
+// Statistics admin dashboard
+//-----------------------------------------*/}
+                  <div className="stats-container">
+
+                    <div className="stat-card">
+                      <h3>{totalBookings}</h3>
+                      <p>Total Bookings</p>
+                    </div>
+
+                    <div className="stat-card pending">
+                      <h3>{pendingCount}</h3>
+                      <p>Pending</p>
+                    </div>
+
+                    <div className="stat-card approved">
+                      <h3>{approvedCount}</h3>
+                      <p>Approved</p>
+                    </div>
+
+                    <div className="stat-card rejected">
+                      <h3>{rejectedCount}</h3>
+                      <p>Rejected</p>
+                    </div>
+
+              </div>
     <h3>All Bookings (Admin)</h3>
 
     {bookings.length === 0 ? (

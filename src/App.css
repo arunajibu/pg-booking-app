@@ -436,3 +436,98 @@ body {
 .status-badge.rejected:hover {
   box-shadow: 0 6px 16px rgba(180, 35, 24, 0.25);
 }
+
+.stats-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 20px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+}
+
+.stat-card h3 {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.stat-card p {
+  font-weight: 600;
+  color: #555;
+}
+
+/* Hover animation */
+.stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.15);
+}
+
+/* Status colors */
+.stat-card.pending {
+  border-top: 5px solid #f4b400;
+}
+
+.stat-card.approved {
+  border-top: 5px solid #34a853;
+}
+
+.stat-card.rejected {
+  border-top: 5px solid #ea4335;
+}
+
+/* ========================= */
+/* ADMIN STATS PANEL */
+/* ========================= */
+
+.stats-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1.5rem;
+  margin: 1.5rem 0 2rem 0;
+}
+
+.stat-card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 20px;
+  text-align: center;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+}
+
+.stat-card h3 {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+}
+
+.stat-card p {
+  font-weight: 600;
+  color: #666;
+}
+
+/* Hover lift effect */
+.stat-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.15);
+}
+
+/* Status top borders */
+.stat-card.pending {
+  border-top: 5px solid #f4b400;
+}
+
+.stat-card.approved {
+  border-top: 5px solid #34a853;
+}
+
+.stat-card.rejected {
+  border-top: 5px solid #ea4335;
+}
