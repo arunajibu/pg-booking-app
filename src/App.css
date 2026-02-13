@@ -389,3 +389,50 @@ body {
   padding: 0.5rem 1rem;
   border-radius: 8px;
 }
+/* STATUS BADGE */
+.status-badge {
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: capitalize;
+  display: inline-block;
+  transition: all 0.25s ease;
+  cursor: default;
+}
+
+/* Hover Animation */
+.status-badge:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
+
+/* Approved */
+.status-badge.approved {
+  background-color: #e6f7ed;
+  color: #1a7f37;
+}
+
+/* Pending */
+.status-badge.pending {
+  background-color: #fff8e1;
+  color: #b26a00;
+}
+
+/* Rejected */
+.status-badge.rejected {
+  background-color: #fdecea;
+  color: #b42318;
+}
+.status-badge.approved:hover {
+  box-shadow: 0 6px 16px rgba(26, 127, 55, 0.25);
+}
+
+.status-badge.pending:hover {
+  box-shadow: 0 6px 16px rgba(178, 106, 0, 0.25);
+}
+
+.status-badge.rejected:hover {
+  box-shadow: 0 6px 16px rgba(180, 35, 24, 0.25);
+}

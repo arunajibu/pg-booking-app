@@ -300,6 +300,16 @@ function App() {
       fetchRooms();
     }
   };
+  //-----------------------------
+  // Status Badge Component
+  //-----------------------------
+  const StatusBadge = ({ status }) => {
+    return (
+      <span className={`status-badge ${status}`}>
+        {status.charAt(0).toUpperCase() + status.slice(1)}
+      </span>
+    );
+  };
 
 
   // -------------------------------
@@ -364,6 +374,7 @@ function App() {
               {/* Right */}
               <div className="nav-right">
 
+                {/* USER NAV */}
                 {userRole !== 'admin' && !showBookings && (
                   <button
                     className="nav-link"
@@ -372,6 +383,7 @@ function App() {
                     My Bookings
                   </button>
                 )}
+
                 {userRole !== 'admin' && showBookings && (
                   <button
                     className="nav-link"
@@ -380,6 +392,26 @@ function App() {
                     Home
                   </button>
                 )}
+
+                {/* ADMIN NAV */}
+                {userRole === 'admin' && !showBookings && (
+                  <button
+                    className="nav-link"
+                    onClick={() => setShowBookings(true)}
+                  >
+                    View Bookings
+                  </button>
+                )}
+
+                {userRole === 'admin' && showBookings && (
+                  <button
+                    className="nav-link"
+                    onClick={() => setShowBookings(false)}
+                  >
+                    Home
+                  </button>
+                )}
+
                 <button
                   className="nav-link logout-btn"
                   onClick={logout}
@@ -421,8 +453,8 @@ function App() {
                       </p>
 
                       <p>
-                        <strong>Status:</strong> {booking.status}
-                      </p> 
+                        <strong>Status:</strong> <StatusBadge status={booking.status} />
+                      </p>
                       <p>
                         <strong>Price:</strong> ₹{booking.rooms?.price}
                       </p>
@@ -434,7 +466,7 @@ function App() {
   </>
 )}
 {/* ADMIN BOOKINGS */}
-{userRole === 'admin' && (
+{userRole === 'admin' && showBookings && (
   <>
     <h3>All Bookings (Admin)</h3>
 
@@ -455,7 +487,7 @@ function App() {
 
               <p><strong>Check-in:</strong> {booking.check_in}</p>
               <p><strong>Check-out:</strong> {booking.check_out}</p>
-              <p><strong>Status:</strong> {booking.status}</p>
+              <p><strong>Status:</strong> <StatusBadge status={booking.status} /></p>
               <p><strong>Price:</strong> ₹{booking.rooms?.price}</p>
 
               {booking.status === 'pending' && (
@@ -489,7 +521,7 @@ function App() {
 
 
 {/* ROOMS LIST */}
-{!showBookings && userRole !== 'admin' && (
+{!showBookings && (
   <>
     <h3>Available Rooms</h3>
 
