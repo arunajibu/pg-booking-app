@@ -444,7 +444,17 @@ function App() {
       {/* AUTH SCREEN */}
       {!session ? (
 
-        <div className="auth-container">
+        <div className="auth-page">
+
+          <div className="auth-left">
+            <h1>Find Your Perfect Stay</h1>
+            <p>
+              Discover premium rental properties with secure advance booking
+              and seamless management.
+            </p>
+          </div>
+
+          <div className="auth-container">
 
           <div className="auth-header">
             <h2>🏠 RentalHub</h2>
@@ -474,9 +484,11 @@ function App() {
             <button onClick={signUp}>Sign Up</button>
           </div>
 
-        </div>
+          </div> 
+        </div>   
 
       ) : (
+
 
         /* DASHBOARD */
           <div>
