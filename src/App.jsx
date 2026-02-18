@@ -11,6 +11,18 @@ function App() {
   const [bookings, setBookings] = useState([]);
   const [userRole, setUserRole] = useState(null);
   const [showBookings, setShowBookings] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [selectedBooking, setSelectedBooking] = useState(null);
+  const [processingPayment, setProcessingPayment] = useState(false);
+
+  const [cardDetails, setCardDetails] = useState({
+  name: "",
+  number: "",
+  expiry: "",
+  cvv: ""
+});
+
+
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -332,7 +344,7 @@ function App() {
   // -------------------------------
   // Handle Payment
   // -------------------------------
-  const handlePayment = async (booking) => {
+  const Payment = async (booking) => {
     try {
       setLoadingPayment(booking.id);
 
@@ -352,6 +364,76 @@ function App() {
     }
   };
 
+  const handleAdvancePayment = async () => {
+    if (!selectedBooking) return;
+
+    // 🔍 Basic validation
+    if (
+      !cardDetails.name ||
+      !cardDetails.number ||
+      !cardDetails.expiry ||
+      !cardDetails.cvv
+    ) {
+      alert("Please fill all card details.");
+      return;
+    }
+
+    if (cardDetails.number.length !== 16) {
+      alert("Card number must be 16 digits.");
+      return;
+    }
+
+    if (cardDetails.cvv.length !== 3) {
+      alert("CVV must be 3 digits.");
+      return;
+    }
+
+    try {
+      setProcessingPayment(true);
+
+      // simulate payment delay
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
+      const advanceAmount = Math.round(
+        selectedBooking.rooms?.price * 0.2
+      );
+
+      const { error } = await supabase
+        .from("bookings")
+        .update({
+          payment_status: "paid",
+          advance_paid: advanceAmount
+        })
+        .eq("id", selectedBooking.id);
+
+      if (error) throw error;
+
+      // update local state
+      setBookings((prev) =>
+        prev.map((b) =>
+          b.id === selectedBooking.id
+            ? { ...b, payment_status: "paid" }
+            : b
+        )
+      );
+
+      // reset
+      setProcessingPayment(false);
+      setShowPaymentModal(false);
+      setSelectedBooking(null);
+      setCardDetails({
+        name: "",
+        number: "",
+        expiry: "",
+        cvv: ""
+      });
+
+    } catch (err) {
+      console.error(err);
+      alert("Payment failed.");
+      setProcessingPayment(false);
+    }
+  };
 
   // -------------------------------
   // UI
@@ -510,15 +592,16 @@ function App() {
 
                       {booking.status === "approved" &&
                         booking.payment_status !== "paid" && (
-                          <button
-                            className="pay-btn"
-                            onClick={() => handlePayment(booking)}
-                            disabled={loadingPayment === booking.id}
-                          >
-                            {loadingPayment === booking.id
-                              ? "Processing..."
-                              : "Pay Now"}
-                          </button>
+                        <button
+                          className="pay-btn"
+                          onClick={() => {
+                            setSelectedBooking(booking);
+                            setShowPaymentModal(true);
+                          }}
+                        >
+                          Pay Now
+                        </button>
+
                         )}
 
                     </div>
@@ -727,8 +810,92 @@ function App() {
           </div>
         </div>
       )}
+      {/* PAYMENT MODAL */}
+      {showPaymentModal && selectedBooking && (
+        <div className="payment-overlay">
+          <div className="payment-modal">
+            <h3>Complete Payment</h3>
 
-    </div>
+            <p>
+              <strong>Room:</strong> {selectedBooking.rooms?.name}
+            </p>
+
+            <p>
+              <strong>Total Price:</strong> ₹{selectedBooking.rooms?.price}
+            </p>
+            <p>
+              <strong>Advance (20%):</strong> ₹
+              {Math.round(selectedBooking.rooms?.price * 0.2)}
+            </p>
+            <h4 className="payment-heading">Payment Details</h4>
+            <div className="payment-form">
+              <input
+                type="text"
+                placeholder="Card Holder Name"
+                value={cardDetails.name}
+                onChange={(e) =>
+                  setCardDetails({ ...cardDetails, name: e.target.value })
+                }
+              />
+
+              <input
+                type="text"
+                placeholder="Card Number"
+                maxLength="16"
+                value={cardDetails.number}
+                onChange={(e) =>
+                  setCardDetails({ ...cardDetails, number: e.target.value })
+                }
+              />
+
+              <div className="card-row">
+                <input
+                  type="text"
+                  placeholder="MM/YY"
+                  maxLength="5"
+                  value={cardDetails.expiry}
+                  onChange={(e) =>
+                    setCardDetails({ ...cardDetails, expiry: e.target.value })
+                  }
+                />
+
+                <input
+                  type="password"
+                  placeholder="CVV"
+                  maxLength="3"
+                  value={cardDetails.cvv}
+                  onChange={(e) =>
+                    setCardDetails({ ...cardDetails, cvv: e.target.value })
+                  }
+                />
+              </div>
+            </div>
+            <button
+              className="pay-advance-btn"
+              onClick={handleAdvancePayment}
+              disabled={processingPayment}
+            >
+              {processingPayment
+                ? "Processing Payment..."
+                : `Pay Advance ₹${Math.round(
+                  selectedBooking.rooms?.price * 0.2
+                )}`}
+            </button>
+
+            <button
+              className="close-btn"
+              onClick={() => {
+                setShowPaymentModal(false);
+                setSelectedBooking(null);
+              }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+    </div>    
   );
 }
 
