@@ -491,7 +491,7 @@ function App() {
 
 
         /* DASHBOARD */
-          <div>
+          <div className="dashboard-page">
 
             {/* NAVBAR */}
             <div className="navbar">
